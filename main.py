@@ -2,10 +2,12 @@ import os
 import uuid
 import logging
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from parser import DocumentParser
 from ai_engine import ai_engine
@@ -18,6 +20,27 @@ app = FastAPI(
     description="Backend API powering ClauseLens legal document factual analysis, blind spots identification, and grounded Q&A.",
     version="3.0.0"
 )
+
+# --- Security Middleware ---
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # In-memory document store
 DOCUMENT_STORE: Dict[str, Dict[str, Any]] = {}
@@ -42,6 +65,11 @@ async def upload_document(
     filename = file.filename
     content_type = file.content_type or ""
     contents = await file.read()
+    
+    # 5MB File Size Limit
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 5MB.")
 
     try:
         from fastapi.concurrency import run_in_threadpool

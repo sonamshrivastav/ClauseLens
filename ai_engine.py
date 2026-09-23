@@ -19,7 +19,19 @@ class AIEngine:
 
 
     def _extract_json(self, text: str) -> Dict[str, Any]:
-        """Robustly extracts JSON object from LLM response text."""
+        """
+        Robustly extracts JSON object from LLM response text.
+        Strips markdown formatting and attempts to repair broken JSON structure.
+
+        Args:
+            text (str): The raw output from the language model.
+
+        Returns:
+            Dict[str, Any]: Parsed JSON dictionary.
+
+        Raises:
+            ValueError: If JSON cannot be reliably parsed.
+        """
         cleaned = text.strip()
         if cleaned.startswith("```json"):
             cleaned = cleaned[7:]
@@ -92,7 +104,20 @@ class AIEngine:
         return response.choices[0].message.content
 
     def generate_and_parse_completion(self, prompt: str, system_instruction: str = "", provider: str = "auto") -> Dict[str, Any]:
-        """Tries to generate and parse JSON, falling back to other providers on failure."""
+        """
+        Generates and parses a JSON completion using primary and fallback LLM APIs.
+
+        Args:
+            prompt (str): The main user prompt to evaluate.
+            system_instruction (str, optional): System-level prompt steering the AI.
+            provider (str, optional): Target provider ("auto", "gemini", "groq").
+
+        Returns:
+            Dict[str, Any]: A successfully extracted JSON object.
+
+        Raises:
+            ValueError: If both providers fail to return valid JSON.
+        """
         if provider == "groq" or (provider == "auto" and self.groq_key and not self.gemini_key):
             try:
                 raw = self._call_groq(prompt, system_instruction)
@@ -139,7 +164,17 @@ class AIEngine:
         return unique_items
 
     def _validate_and_repair_analysis(self, analysis: Dict[str, Any], clauses: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Validates AI response against actual uploaded text and repairs errors/hallucinations."""
+        """
+        Validates AI response against actual uploaded text and repairs errors/hallucinations.
+        Ensures exact quotes match the uploaded document text.
+
+        Args:
+            analysis (Dict[str, Any]): The initial AI output.
+            clauses (List[Dict[str, Any]]): The list of actual document clauses.
+
+        Returns:
+            Dict[str, Any]: The repaired and verified analysis dict.
+        """
         doc_text_combined = " ".join([c.get("originalText", "") for c in clauses]).lower()
 
         # Deduplicate blind spots

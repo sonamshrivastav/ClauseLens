@@ -4,6 +4,19 @@ let activeDocId = null;
 let currentDocData = null;
 
 // Safe DOM Helper Functions
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
 function safeSetText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
@@ -43,6 +56,14 @@ function initUploadHandler() {
 
   dropZone.addEventListener("dragleave", () => {
     dropZone.classList.remove("drag-over");
+  });
+
+  // Accessibility: Keyboard support for dropZone
+  dropZone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInput.click();
+    }
   });
 
   dropZone.addEventListener("drop", (e) => {
@@ -160,12 +181,12 @@ function renderAnalysisView(data) {
   const blindSpotsArray = analysis.blind_spots || [];
   if (blindSpotsArray.length > 0) {
     safeSetDisplay("blindSpotsContainer", "block");
-    safeSetHTML("blindSpotsList", blindSpotsArray.map(bs => `<li><span>⚠️</span> <div>${bs}</div></li>`).join(""));
+    safeSetHTML("blindSpotsList", blindSpotsArray.map(bs => `<li><span>⚠️</span> <div>${escapeHTML(bs)}</div></li>`).join(""));
   } else {
     const bsFromFindings = findings.filter(f => f.category === "blind_spot" || f.what_is_unclear).map(f => f.what_is_unclear || f.why_it_matters);
     if (bsFromFindings.length > 0) {
       safeSetDisplay("blindSpotsContainer", "block");
-      safeSetHTML("blindSpotsList", bsFromFindings.map(bs => `<li><span>⚠️</span> <div>${bs}</div></li>`).join(""));
+      safeSetHTML("blindSpotsList", bsFromFindings.map(bs => `<li><span>⚠️</span> <div>${escapeHTML(bs)}</div></li>`).join(""));
     } else {
       safeSetDisplay("blindSpotsContainer", "none");
     }
@@ -174,7 +195,7 @@ function renderAnalysisView(data) {
   // Render Key Obligations Summary List
   const obligationsArray = analysis.key_obligations || [];
   if (obligationsArray.length > 0) {
-    safeSetHTML("keyObligationsList", obligationsArray.map(ob => `<li>${ob}</li>`).join(""));
+    safeSetHTML("keyObligationsList", obligationsArray.map(ob => `<li>${escapeHTML(ob)}</li>`).join(""));
   } else {
     safeSetHTML("keyObligationsList", `<li style="color:var(--text-muted);">Standard document obligations apply.</li>`);
   }
@@ -182,7 +203,7 @@ function renderAnalysisView(data) {
   // Render Important Dates Summary List
   const datesArray = analysis.important_dates || [];
   if (datesArray.length > 0) {
-    safeSetHTML("importantDatesList", datesArray.map(d => `<li>${d}</li>`).join(""));
+    safeSetHTML("importantDatesList", datesArray.map(d => `<li>${escapeHTML(d)}</li>`).join(""));
   } else {
     safeSetHTML("importantDatesList", `<li style="color:var(--text-muted);">No specific deadlines identified.</li>`);
   }
@@ -212,12 +233,14 @@ function renderAnalysisView(data) {
         catBadgeLabel = "📌 KEY OBLIGATION";
       }
 
-      const whatSays = finding.what_document_says || finding.source_text || "";
-      const plain = finding.plain_language || "";
-      const matters = finding.why_it_matters || "";
-      const unclear = finding.what_is_unclear || "";
-      const question = finding.question_to_clarify || "";
-      const sourceSec = finding.source_section || "Section";
+      const whatSays = escapeHTML(finding.what_document_says || finding.source_text || "");
+      const plain = escapeHTML(finding.plain_language || "");
+      const matters = escapeHTML(finding.why_it_matters || "");
+      const unclear = escapeHTML(finding.what_is_unclear || "");
+      const question = escapeHTML(finding.question_to_clarify || "");
+      const sourceSec = escapeHTML(finding.source_section || "Section");
+      const titleEsc = escapeHTML(finding.title || 'Clause');
+      const sourcePage = escapeHTML(finding.source_page || "");
 
       let unclearHtml = "";
       if (unclear && unclear.trim()) {
@@ -243,7 +266,7 @@ function renderAnalysisView(data) {
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
           <div>
             <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-secondary);">${sourceSec}</span>
-            <h3 style="font-size:1.15rem; font-weight:800; margin-top:0.2rem;">${finding.title || 'Clause'}</h3>
+            <h3 style="font-size:1.15rem; font-weight:800; margin-top:0.2rem;">${titleEsc}</h3>
           </div>
           <span class="category-badge ${catBadgeClass}">${catBadgeLabel}</span>
         </div>
@@ -267,7 +290,7 @@ function renderAnalysisView(data) {
         ${questionHtml}
 
         <div class="source-tag">
-          Source: ${sourceSec} ${finding.source_page ? '• Page ' + finding.source_page : ''}
+          Source: ${sourceSec} ${sourcePage ? '• Page ' + sourcePage : ''}
         </div>
       `;
 
@@ -390,9 +413,9 @@ function appendMsg(text, sender, citation = null) {
   const bubble = document.createElement("div");
   bubble.className = `msg-bubble ${sender === 'user' ? 'msg-user' : 'msg-ai'}`;
 
-  let html = `<div>${text}</div>`;
+  let html = `<div>${escapeHTML(text)}</div>`;
   if (citation) {
-    html += `<div style="font-size:0.75rem; color:#a5b4fc; margin-top:0.4rem; font-weight:700;">📌 Citation: ${citation}</div>`;
+    html += `<div style="font-size:0.75rem; color:#a5b4fc; margin-top:0.4rem; font-weight:700;">📌 Citation: ${escapeHTML(citation)}</div>`;
   }
   bubble.innerHTML = html;
   container.appendChild(bubble);

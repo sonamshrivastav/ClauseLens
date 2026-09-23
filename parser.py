@@ -8,6 +8,18 @@ class DocumentParser:
 
     @staticmethod
     def extract_text_from_pdf(file_bytes: bytes) -> str:
+        """
+        Extract raw text from a PDF file.
+
+        Args:
+            file_bytes (bytes): The binary contents of the PDF file.
+
+        Returns:
+            str: The extracted text from all pages joined by double newlines.
+
+        Raises:
+            ValueError: If no text can be extracted from the PDF.
+        """
         pdf_file = io.BytesIO(file_bytes)
         reader = PdfReader(pdf_file)
         full_text = []
@@ -22,6 +34,18 @@ class DocumentParser:
 
     @staticmethod
     def extract_text_from_txt(file_bytes: bytes) -> str:
+        """
+        Decode and extract text from a plain text file.
+
+        Args:
+            file_bytes (bytes): The binary contents of the TXT file.
+
+        Returns:
+            str: The decoded utf-8 string.
+
+        Raises:
+            ValueError: If the file is completely empty.
+        """
         text = file_bytes.decode('utf-8', errors='ignore').strip()
         if not text:
             raise ValueError("The uploaded text file is empty.")
@@ -29,6 +53,16 @@ class DocumentParser:
 
     @classmethod
     def parse_document_to_clauses(cls, full_text: str) -> List[Dict[str, Any]]:
+        """
+        Parse raw document text into structured clauses based on common legal numbering.
+
+        Args:
+            full_text (str): The entire raw text of the document.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries representing individual clauses.
+                Each dictionary contains 'id', 'number', 'title', and 'originalText'.
+        """
         lines = full_text.split('\n')
         clauses = []
         current_title = "Preamble & General Terms"

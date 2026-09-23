@@ -18,7 +18,8 @@
       </a>
 
       <div class="nav-actions">
-        <select id="providerSelect" class="provider-select">
+        <label for="providerSelect" class="sr-only" style="display:none;">Select AI Provider</label>
+        <select id="providerSelect" class="provider-select" aria-label="Select AI Provider">
           <option value="auto">⚡ High Accuracy Mode</option>
           <option value="gemini">✦ Standard AI Mode</option>
           <option value="groq">🚀 Turbo Processing Mode</option>
@@ -36,27 +37,27 @@
     </div>
 
     <!-- Drag & Drop Upload or Paste Section -->
-    <section id="uploadSection">
-      <div id="dropZone" class="upload-card">
-        <div class="upload-icon">📄</div>
+    <section id="uploadSection" aria-label="Upload Section">
+      <div id="dropZone" class="upload-card" tabindex="0" role="button" aria-label="Drop zone to upload contract or agreement. Press Enter to select file.">
+        <div class="upload-icon" aria-hidden="true">📄</div>
         <h2 style="font-size:1.25rem; font-weight:800; margin-bottom:0.35rem;">Upload Contract or Agreement (PDF / TXT)</h2>
         <p style="color:var(--text-secondary); font-size:0.9rem;">Drag & drop your document here, or click to select file</p>
-        <input type="file" id="fileInput" accept=".pdf,.txt" style="width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; position: absolute; z-index: -1;">
+        <input type="file" id="fileInput" accept=".pdf,.txt" style="width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; position: absolute; z-index: -1;" aria-hidden="true" tabindex="-1">
       </div>
 
       <div style="background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-lg); padding:1.5rem; margin-bottom:2rem;">
-        <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.5rem;">Or Paste Contract Text Directly:</h3>
-        <textarea id="pasteInput" class="input-field" rows="4" placeholder="Paste contract text here..." style="margin-bottom:0.75rem;"></textarea>
-        <button id="btnAnalyzePasted" class="btn-primary">⚡ Analyze Pasted Text</button>
+        <label for="pasteInput" style="display:block; font-size:1rem; font-weight:700; margin-bottom:0.5rem;">Or Paste Contract Text Directly:</label>
+        <textarea id="pasteInput" class="input-field" rows="4" placeholder="Paste contract text here..." style="margin-bottom:0.75rem;" aria-label="Contract text input"></textarea>
+        <button id="btnAnalyzePasted" class="btn-primary" aria-label="Analyze Pasted Text">⚡ Analyze Pasted Text</button>
       </div>
 
-      <div id="loadingIndicator" style="display:none; text-align:center; padding:1.5rem; color:var(--primary); font-weight:700;">
+      <div id="loadingIndicator" style="display:none; text-align:center; padding:1.5rem; color:var(--primary); font-weight:700;" aria-live="polite">
         ⏳ ClauseLens Analyzing Document... Extracting factual clauses & checking potential blind spots...
       </div>
     </section>
 
     <!-- Active Document Analysis Dashboard -->
-    <section id="analysisDashboard">
+    <section id="analysisDashboard" aria-live="polite" aria-label="Analysis Dashboard">
       
       <!-- Document Overview Banner -->
       <div class="hero-banner">
@@ -91,14 +92,14 @@
       </div>
 
       <!-- Tab Bar -->
-      <nav class="tab-bar">
-        <button class="tab-btn active" data-tab="tab-breakdown">
+      <nav class="tab-bar" aria-label="Dashboard Tabs" role="tablist">
+        <button class="tab-btn active" data-tab="tab-breakdown" role="tab" aria-selected="true" aria-controls="tab-breakdown">
           <span>🔍 Clause Breakdown & Blind Spots</span>
         </button>
-        <button class="tab-btn" data-tab="tab-chat">
+        <button class="tab-btn" data-tab="tab-chat" role="tab" aria-selected="false" aria-controls="tab-chat">
           <span>💬 AI Legal Assistant</span>
         </button>
-        <button class="tab-btn" data-tab="tab-negotiate">
+        <button class="tab-btn" data-tab="tab-negotiate" role="tab" aria-selected="false" aria-controls="tab-negotiate">
           <span>✉️ Suggested Clarifications</span>
         </button>
       </nav>
@@ -156,8 +157,9 @@
           </div>
 
           <div class="chat-input-bar">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Ask a question (e.g., 'Can I leave after 3 months?')...">
-            <button id="btnSendChat" class="btn-primary">Ask AI</button>
+            <label for="chatInput" class="sr-only" style="display:none;">Ask a question</label>
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask a question (e.g., 'Can I leave after 3 months?')..." aria-label="Ask a question about the document">
+            <button id="btnSendChat" class="btn-primary" aria-label="Send question to AI">Ask AI</button>
           </div>
         </div>
       </div>
