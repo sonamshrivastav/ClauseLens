@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClauseLens — Legal Document Intelligence Platform</title>
+  <link rel="stylesheet" href="style.css?v=3.0.1">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo">
+        <div class="brand-icon">🔍</div>
+        <span>ClauseLens<span style="color:var(--primary)">AI</span></span>
+        <span class="badge-app">Document Assistant</span>
+      </a>
+
+      <div class="nav-actions">
+        <select id="providerSelect" class="provider-select">
+          <option value="auto">⚡ High Accuracy Mode</option>
+          <option value="gemini">✦ Standard AI Mode</option>
+          <option value="groq">🚀 Turbo Processing Mode</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    
+    <!-- Legal Disclaimer Banner -->
+    <div class="disclaimer-banner">
+      <span>⚖️</span>
+      <p><strong>Disclaimer:</strong> ClauseLens provides document-based information and general explanations. It does not provide legal advice or determine whether a clause is legally enforceable. For decisions involving your legal rights or obligations, consult a qualified legal professional.</p>
+    </div>
+
+    <!-- Drag & Drop Upload or Paste Section -->
+    <section id="uploadSection">
+      <div id="dropZone" class="upload-card">
+        <div class="upload-icon">📄</div>
+        <h2 style="font-size:1.25rem; font-weight:800; margin-bottom:0.35rem;">Upload Contract or Agreement (PDF / TXT)</h2>
+        <p style="color:var(--text-secondary); font-size:0.9rem;">Drag & drop your document here, or click to select file</p>
+        <input type="file" id="fileInput" accept=".pdf,.txt" style="width: 0.1px; height: 0.1px; opacity: 0; overflow: hidden; position: absolute; z-index: -1;">
+      </div>
+
+      <div style="background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-lg); padding:1.5rem; margin-bottom:2rem;">
+        <h3 style="font-size:1rem; font-weight:700; margin-bottom:0.5rem;">Or Paste Contract Text Directly:</h3>
+        <textarea id="pasteInput" class="input-field" rows="4" placeholder="Paste contract text here..." style="margin-bottom:0.75rem;"></textarea>
+        <button id="btnAnalyzePasted" class="btn-primary">⚡ Analyze Pasted Text</button>
+      </div>
+
+      <div id="loadingIndicator" style="display:none; text-align:center; padding:1.5rem; color:var(--primary); font-weight:700;">
+        ⏳ ClauseLens Analyzing Document... Extracting factual clauses & checking potential blind spots...
+      </div>
+    </section>
+
+    <!-- Active Document Analysis Dashboard -->
+    <section id="analysisDashboard">
+      
+      <!-- Document Overview Banner -->
+      <div class="hero-banner">
+        <div style="max-width:700px;">
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.05em;">DOCUMENT OVERVIEW</span>
+            <span id="docTypeBadge" class="doc-type-badge">Contract</span>
+          </div>
+          <h1 id="docTitleDisplay">Upload a document above to begin analysis</h1>
+          <p id="docSummaryDisplay" style="color:var(--text-secondary); font-size:0.9rem; margin-top:0.4rem; line-height:1.5;">Factual clause analysis and blind spot identification.</p>
+        </div>
+
+        <!-- Factual Analysis Stat Counts -->
+        <div class="hero-stats-grid">
+          <div class="stat-count-box border-rose">
+            <div id="countImportant" class="stat-number color-rose">0</div>
+            <div class="stat-label">🔴 Important</div>
+          </div>
+          <div class="stat-count-box border-amber">
+            <div id="countAmbiguities" class="stat-number color-amber">0</div>
+            <div class="stat-label">🟡 Ambiguities</div>
+          </div>
+          <div class="stat-count-box border-cyan">
+            <div id="countBlindSpots" class="stat-number color-cyan">0</div>
+            <div class="stat-label">👀 Blind Spots</div>
+          </div>
+          <div class="stat-count-box border-emerald">
+            <div id="countObligations" class="stat-number color-emerald">0</div>
+            <div class="stat-label">📌 Obligations</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <nav class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-breakdown">
+          <span>🔍 Clause Breakdown & Blind Spots</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-chat">
+          <span>💬 AI Legal Assistant</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-negotiate">
+          <span>✉️ Suggested Clarifications</span>
+        </button>
+      </nav>
+
+      <!-- Tab 1: Breakdown -->
+      <div id="tab-breakdown" class="tab-content active">
+        
+        <!-- Prominent Potential Blind Spots Section -->
+        <div id="blindSpotsContainer" class="blind-spots-card" style="display:none;">
+          <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.75rem;">
+            <span style="font-size:1.3rem;">👀</span>
+            <div>
+              <h3 style="font-size:1.1rem; font-weight:800; color:#cbd5e1;">Potential Blind Spots</h3>
+              <p style="font-size:0.8rem; color:var(--text-secondary);">These are areas the document does not clearly specify or that a non-lawyer may want to clarify.</p>
+            </div>
+          </div>
+          <ul id="blindSpotsList" class="blind-spots-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <!-- Summary Cards Grid (Key Obligations & Important Dates) -->
+        <div class="summary-cards-grid">
+          <div class="summary-box">
+            <h4 style="font-size:0.9rem; font-weight:800; color:#6ee7b7; margin-bottom:0.6rem;">📌 Key Obligations</h4>
+            <ul id="keyObligationsList" class="summary-list">
+              <li style="color:var(--text-muted);">Upload document to view key obligations.</li>
+            </ul>
+          </div>
+
+          <div class="summary-box">
+            <h4 style="font-size:0.9rem; font-weight:800; color:#a5b4fc; margin-bottom:0.6rem;">📅 Important Dates & Notices</h4>
+            <ul id="importantDatesList" class="summary-list">
+              <li style="color:var(--text-muted);">Upload document to view important timelines.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Detailed Clause Breakdown List -->
+        <h3 style="font-size:1.1rem; font-weight:800; margin-top:2rem; margin-bottom:1rem; color:var(--text-primary);">Clause Analysis & Findings</h3>
+        <div id="clauseListContainer">
+          <div class="clause-card" style="text-align:center; color:var(--text-secondary); padding:2rem;">
+            Upload a document or paste text above to view clause breakdown.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Q&A Assistant -->
+      <div id="tab-chat" class="tab-content">
+        <div class="chat-container">
+          <div id="chatMessages" class="chat-messages">
+            <div class="msg-bubble msg-ai">
+              <div>Hello! I am your <strong>ClauseLens Assistant</strong>. Ask me any question about your document and I will answer strictly based on the text, highlighting unstated terms and citing specific sections.</div>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask a question (e.g., 'Can I leave after 3 months?')...">
+            <button id="btnSendChat" class="btn-primary">Ask AI</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Suggested Clarifications -->
+      <div id="tab-negotiate" class="tab-content">
+        <div id="negotiationScriptContainer">
+          <div class="clause-card" style="text-align:center; color:var(--text-secondary); padding:2rem;">
+            Upload a document to generate neutral clarification suggestions.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <footer class="footer">
+    <p>ClauseLens — Legal Document Intelligence Platform. For informational clarity and document navigation.</p>
+  </footer>
+
+  <script src="app.js?v=3.0.1"></script>
+</body>
+</html>
